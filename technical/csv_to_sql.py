@@ -36,39 +36,39 @@ cur = conn.cursor()
 
 
 cur.execute('''CREATE TABLE cities(
-            city_id int NOT NULL,\
-            city_key char(100),\
-            city_name char(30),\
+            city_id INT NOT NULL,\
+            city_key VARCHAR(100),\
+            city_name VARCHAR(30),\
             PRIMARY KEY (city_key));''')
 
 print('created')
 
 cur.execute('''CREATE TABLE branches(
-            branch_id int NOT NULL,\
-            branch_key char(100),\
-            branch_name char(40),\
-            city_key varchar(100) REFERENCES cities (city_key),\
-            branch_short_name char(100),\
-            branch_region char(40),\
+            branch_id INT NOT NULL,\
+            branch_key VARCHAR(100),\
+            branch_name VARCHAR(40),\
+            city_key VARCHAR(100) REFERENCES cities (city_key),\
+            branch_short_name VARCHAR(100),\
+            branch_region VARCHAR(40),\
             PRIMARY KEY (branch_key));''')
 
 print('created')
 
 cur.execute('''CREATE TABLE products(
-            product_id int NOT NULL,\
-            product_key char(100),\
-            product_name char(200),\
+            product_id INT NOT NULL,\
+            product_key VARCHAR(100),\
+            product_name VARCHAR(200),\
             PRIMARY KEY (product_key));''')
 
 print('created')
 
 cur.execute('''CREATE TABLE sales(
-            sale_id int NOT NULL,\
-            sale_period char(40),\
-            branch_key char(100) REFERENCES branches (branch_key),\
-            product_key char(40) REFERENCES products (product_key),\
-            sale_quantity float,\
-            sale_price float);''')
+            sale_id INT NOT NULL,\
+            sale_period TIMESTAMP,\
+            branch_key VARCHAR(100) REFERENCES branches (branch_key),\
+            product_key VARCHAR(40) REFERENCES products (product_key),\
+            sale_quantity FLOAT,\
+            sale_price FLOAT);''')
 
 print('created')
 
@@ -82,15 +82,6 @@ load_to_database('t_branches.csv', 'branches')
 load_to_database('t_products.csv', 'products')
 load_to_database('t_sales.csv', 'sales')
 
-# th1.start()
-# th2.start()
-# th3.start()
-# th4.start()
-
-# th1.join()
-# th2.join()
-# th3.join()
-# th4.join()
-
 conn.commit() 
+cur.close()
 conn.close() 
