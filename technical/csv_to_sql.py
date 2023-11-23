@@ -1,14 +1,22 @@
 import psycopg2 
 import csv
-import pandas as pd
-from sqlalchemy import create_engine
 import threading
-    
+import time
 
+
+def timer(f):
+    def wrapper(*args, **kwargs):
+        t = time.time()
+        res = f(*args, **kwargs)
+        print("Время выполнения функции: %f" % (time.time()-t))
+        return res
+    return wrapper
+
+@timer
 def load_to_database(filename, table_name):
     with open(f'../test_data/{filename}', 'r') as f:
         cur.copy_expert(f'COPY {table_name} FROM stdin WITH CSV HEADER', f)
-    return 1
+    print(f'table {table_name} created')
 
 
 db_params = {'database' : 'postgres',
@@ -33,15 +41,18 @@ cur.execute('''CREATE TABLE cities(
             city_name char(30),\
             PRIMARY KEY (city_key));''')
 
+print('created')
+
 cur.execute('''CREATE TABLE branches(
             branch_id int NOT NULL,\
             branch_key char(100),\
             branch_name char(40),\
-            city_key varchar(100),\
+            city_key varchar(100) REFERENCES cities (city_key),\
             branch_short_name char(100),\
             branch_region char(40),\
-            PRIMARY KEY (branch_key),\
-            CONSTRAINT city_key FOREIGN KEY (city_key) REFERENCES cities (city_key));''')
+            PRIMARY KEY (branch_key));''')
+
+print('created')
 
 cur.execute('''CREATE TABLE products(
             product_id int NOT NULL,\
@@ -49,15 +60,17 @@ cur.execute('''CREATE TABLE products(
             product_name char(200),\
             PRIMARY KEY (product_key));''')
 
+print('created')
+
 cur.execute('''CREATE TABLE sales(
             sale_id int NOT NULL,\
             sale_period char(40),\
-            branch_key char(100),\
-            product_key char(40),\
+            branch_key char(100) REFERENCES branches (branch_key),\
+            product_key char(40) REFERENCES products (product_key),\
             sale_quantity float,\
-            sale_price float,\
-            CONSTRAINT fk_branch_key FOREIGN KEY (branch_key) REFERENCES branches (branch_key),\
-            CONSTRAINT fk_product_key FOREIGN KEY (product_key) REFERENCES products (product_key));''')
+            sale_price float);''')
+
+print('created')
 
 # th1 = threading.Thread(target=load_to_database, args=('t_cities.csv', 'cities',))
 # th2 = threading.Thread(target=load_to_database, args=('t_branches.csv', 'branches',))
