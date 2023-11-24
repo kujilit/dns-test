@@ -2,9 +2,13 @@ import psycopg2
 import csv
 import threading
 import time
-
+ 
 
 def timer(f):
+    '''
+    Декоратор для измерения времени работы функции.
+    Ответ возвращается в секундах.
+    '''
     def wrapper(*args, **kwargs):
         t = time.time()
         res = f(*args, **kwargs)
@@ -14,10 +18,16 @@ def timer(f):
 
 @timer
 def load_to_database(filename, table_name):
+    '''
+    Функция, на вход которой передаётся имя csv-файла и имя таблицы.
+    Переносит все данные из csv в таблицы, минуя header строку.
+    '''
     with open(f'../test_data/{filename}', 'r') as f:
         cur.copy_expert(f'COPY {table_name} FROM stdin WITH CSV HEADER', f)
     print(f'table {table_name} created')
 
+
+# Для удобства указываю все данные для подключения к БД в словаре.
 
 db_params = {'database' : 'postgres',
              'user' : 'postgres',
@@ -25,13 +35,14 @@ db_params = {'database' : 'postgres',
              'host' : '127.0.0.1',
              'port' : '5432'}
 
+# Выполняю подключение к базе данных и создаю курсор.
+
 conn = psycopg2.connect(database=db_params['database'], 
 						user=db_params['user'],
                         password=db_params['password'], 
 						host=db_params['host'],
                         port=db_params['port']
 ) 
-
 cur = conn.cursor() 
 
 
@@ -40,8 +51,6 @@ cur.execute('''CREATE TABLE cities(
             city_key VARCHAR(100),\
             city_name VARCHAR(30),\
             PRIMARY KEY (city_key));''')
-
-print('created')
 
 cur.execute('''CREATE TABLE branches(
             branch_id INT NOT NULL,\
@@ -52,15 +61,11 @@ cur.execute('''CREATE TABLE branches(
             branch_region VARCHAR(40),\
             PRIMARY KEY (branch_key));''')
 
-print('created')
-
 cur.execute('''CREATE TABLE products(
             product_id INT NOT NULL,\
             product_key VARCHAR(100),\
             product_name VARCHAR(200),\
             PRIMARY KEY (product_key));''')
-
-print('created')
 
 cur.execute('''CREATE TABLE sales(
             sale_id INT NOT NULL,\
@@ -69,8 +74,6 @@ cur.execute('''CREATE TABLE sales(
             product_key VARCHAR(40) REFERENCES products (product_key),\
             sale_quantity FLOAT,\
             sale_price FLOAT);''')
-
-print('created')
 
 # th1 = threading.Thread(target=load_to_database, args=('t_cities.csv', 'cities',))
 # th2 = threading.Thread(target=load_to_database, args=('t_branches.csv', 'branches',))
